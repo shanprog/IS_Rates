@@ -1,0 +1,15 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="IS_Rates:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/IS_Rates_jar</output-path>
+    <root id="archive" name="IS_Rates.jar">
+      <element id="module-output" name="IS_Rates" />
+      <element id="extracted-dir" path="C:/JavaLibs/poi-3.9/poi-3.9-20121203.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="C:/JavaLibs/poi-3.9/poi-ooxml-3.9-20121203.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="C:/JavaLibs/poi-3.9/poi-examples-3.9-20121203.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="C:/JavaLibs/poi-3.9/poi-excelant-3.9-20121203.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="C:/JavaLibs/poi-3.9/poi-scratchpad-3.9-20121203.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="C:/JavaLibs/poi-3.9/poi-ooxml-schemas-3.9-20121203.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="C:/JavaLibs/mysql-connector-java-5.1.25/mysql-connector-java-5.1.25-bin.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
