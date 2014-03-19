@@ -19,11 +19,7 @@ public class MediatorDB {
     public MediatorDB() {
         try {
             Class.forName("com.mysql.jdbc.Driver").newInstance();
-//            con = DriverManager.getConnection("jdbc:mysql://192.168.1.11:3306/test", "Tarificator", "qiG3hAS1Vo");
 
-//            con = DriverManager.getConnection("jdbc:mysql://192.168.1.11:3307/is_rates", "Tarificator", "qiG3hAS1Vo");
-            con = DriverManager.getConnection("jdbc:mysql://192.168.1.18:3307/test", "root", "njk,hfvtk");
-//            con = DriverManager.getConnection("jdbc:mysql://192.168.1.18:3307/test", "newtest", "1");
 
             st = con.createStatement();
         }

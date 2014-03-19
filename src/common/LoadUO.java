@@ -14,37 +14,31 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.*;
+import java.util.List;
 
 public class LoadUO {
 
-    private JFileChooser fileChooser;
-    private JTextField filePath;
-
-    private java.util.List<JCheckBox> checkboxes;
-    MediatorDB mediatorDB;
-
     private JFrame frame;
+    private JFrame progressFrame;
+    private JTextField filePath;
+    private java.util.List<JCheckBox> checkboxes;
+    private MediatorDB mediatorDB;
+    private JProgressBar progressBar;
+
+    private File[] files;
 
     public LoadUO() {
-
-        frame = new JFrame();
-
-        frame.setTitle("Загрузка УО");
         mediatorDB = new MediatorDB();
+
         createGUI();
 
-        frame.pack();
 
-        Dimension sizeWindow = Toolkit.getDefaultToolkit().getScreenSize();
-        frame.setLocation(sizeWindow.width / 2 - frame.getSize().width / 2, sizeWindow.height / 2 - frame.getSize().height / 2);
-
-        frame.setResizable(false);
-        frame.setVisible(true);
     }
 
-
     private void createGUI() {
+        frame = new JFrame();
+        frame.setTitle("Загрузка УО");
 
         JCheckBox stac_24h = new JCheckBox("Стационар", true);
         JCheckBox stac_8h = new JCheckBox("Дневной стационар", true);
@@ -70,21 +64,15 @@ public class LoadUO {
 
         filePath = new JTextField(30);
 
-        JButton fileChooseButton = new JButton("Папка");
-        fileChooser = new JFileChooser();
-
         JButton buttonSelAll = new JButton("Выбрать все");
         JButton buttonSelNone = new JButton("Снять все");
-
-
+        JButton fileChooseButton = new JButton("Папка");
         JButton loadButton = new JButton("Загрузить");
 
-
-        JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new MigLayout());
-
+        JPanel mainPanel = new JPanel(new MigLayout());
         JPanel topPanel = new JPanel(new MigLayout());
         JPanel bottomPanel = new JPanel(new MigLayout());
+        JPanel selButtonPanel = new JPanel(new MigLayout());
 
 
         for (int i = 0; i < 5; i++)
@@ -94,14 +82,10 @@ public class LoadUO {
             topPanel.add(checkboxes.get(i), "cell 1 " + (i - 5));
         topPanel.add(new JPanel(), "cell 1 4");
 
-        JPanel selButtonPanel = new JPanel();
-        selButtonPanel.setLayout(new MigLayout());
-
         selButtonPanel.add(buttonSelAll, "sg buttons, gapleft 20, wrap");
         selButtonPanel.add(buttonSelNone, "sg buttons, gapleft 20");
 
         topPanel.add(selButtonPanel, "cell 2 0, span 1 5");
-
         topPanel.setBorder(BorderFactory.createTitledBorder("Тип"));
 
         bottomPanel.add(filePath);
@@ -116,6 +100,8 @@ public class LoadUO {
         fileChooseButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+
+                JFileChooser fileChooser = new JFileChooser();
 
                 fileChooser.setDialogTitle("Выбор папки загрузки");
                 fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -146,108 +132,152 @@ public class LoadUO {
             }
         });
 
-        class LoadUOinBase extends Thread {
+        loadButton.addActionListener(new ActionListener() {
             @Override
-            public void run() {
+            public void actionPerformed(ActionEvent e) {
 
                 if (filePath.getText().trim().equals(""))
                     JOptionPane.showMessageDialog(frame, "Путь к папке не может быть пустым");
                 else {
+
                     File myFolder = new File(filePath.getText());
-                    File[] files = myFolder.listFiles();
+                    files = myFolder.listFiles();
 
-                    for (File file : files) {
+                    if (files.length != 0) {
 
-                        java.util.List<String> queries;
+                        progressFrame = new JFrame();
+                        progressBar = new JProgressBar(0, files.length);
+                        progressBar.setStringPainted(true);
 
-                        int idMo;
+//                        progressFrame.setLayout(new MigLayout());
+                        progressFrame.add(progressBar);
 
-                        try {
+                        progressFrame.pack();
 
-                            POIFSFileSystem fs = new POIFSFileSystem(new FileInputStream(file.getAbsolutePath()));
-                            queries = new ArrayList<String>();
+                        Dimension scrSize = Toolkit.getDefaultToolkit().getScreenSize();
+                        progressFrame.setLocation(scrSize.width / 2 - progressFrame.getSize().width / 2, scrSize.height / 2 - progressFrame.getSize().height / 2);
+                        progressFrame.setResizable(false);
 
-                            HSSFWorkbook wb = new HSSFWorkbook(fs);
+                        progressFrame.setVisible(true);
 
-                            HSSFSheet sheet;
-                            HSSFRow row;
-                            HSSFCell cell;
-
-                            sheet = wb.getSheetAt(0);
-                            row = sheet.getRow(8);
-                            cell = row.getCell(0);
-
-                            idMo = mediatorDB.getIdMo(cell.getStringCellValue());
-
-                            for (int i = 0; i < checkboxes.size(); i++) {
-
-                                if (checkboxes.get(i).isSelected()) {
-
-                                    switch (i) {
-                                        case 0:
-                                            process_24h(wb, sheet, row, cell, idMo, queries);
-                                            break;
-                                        case 1:
-                                            process_8h(wb, sheet, row, cell, idMo, queries);
-                                            break;
-                                        case 2:
-                                            process_ambulProf(wb, sheet, row, cell, idMo, queries);
-                                            break;
-                                        case 3:
-                                            process_ambulNeot(wb, sheet, row, cell, idMo, queries);
-                                            break;
-                                        case 4:
-                                            process_ambulZab(wb, sheet, row, cell, idMo, queries);
-                                            break;
-                                        case 5:
-                                            process_stomatProf(wb, sheet, row, cell, idMo, queries);
-                                            break;
-                                        case 6:
-                                            process_stomatNeot(wb, sheet, row, cell, idMo, queries);
-                                            break;
-                                        case 7:
-                                            process_stomatZab(wb, sheet, row, cell, idMo, queries);
-                                            break;
-                                        case 8:
-                                            process_smp(wb, sheet, row, cell, idMo, queries);
-                                            break;
-
-                                    }
-
-                                }
-
-                            }
-
-
-
-//                            LOAD DATA LOCAL INFILE "C:/sites/home/aofoms/www/documents/polises/C_sendmailFilespolis.csv"
-//                            INTO TABLE polises2
-//                            FIELDS TERMINATED BY ';' LINES TERMINATED BY '\n' IGNORE 1 LINES (enp,spol,npol,q);
-
-//                            mediatorDB.setQuries(queries);
-
-
-                            for (String str : queries) {
-                                System.out.println(str);
-                            }
-
-                        } catch (IOException ioException) {
-                            JOptionPane.showMessageDialog(frame, "Файл не может быть прочитан");
-                        }
-
-                        System.out.println();
+                        new LoadUOinBase().execute();
                     }
+
                 }
             }
+        });
+
+
+        frame.pack();
+
+        Dimension sizeWindow = Toolkit.getDefaultToolkit().getScreenSize();
+        frame.setLocation(sizeWindow.width / 2 - frame.getSize().width / 2, sizeWindow.height / 2 - frame.getSize().height / 2);
+
+        frame.setResizable(false);
+        frame.setVisible(true);
+    }
+
+
+
+    private class LoadUOinBase extends SwingWorker<String, Integer> {
+
+        @Override
+        protected String doInBackground() throws Exception {
+
+            for (int i = 0; i < files.length; i++) {
+                processFiles(files[i]);
+                publish(i+1);
+            }
+
+            return "";
         }
 
-        loadButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                new LoadUOinBase().start();
-            }
-        });
+        @Override
+        protected void process(List<Integer> chunks) {
+            progressBar.setValue(chunks.get(0));
+        }
+
+        @Override
+        protected void done() {
+            progressFrame.setVisible(false);
+        }
     }
+
+    private void processFiles(File file) {
+        java.util.List<String> queries;
+
+        int idMo;
+
+        try {
+
+            POIFSFileSystem fs = new POIFSFileSystem(new FileInputStream(file.getAbsolutePath()));
+            queries = new ArrayList<String>();
+
+            HSSFWorkbook wb = new HSSFWorkbook(fs);
+
+            HSSFSheet sheet;
+            HSSFRow row;
+            HSSFCell cell;
+
+            sheet = wb.getSheetAt(0);
+            row = sheet.getRow(8);
+            cell = row.getCell(0);
+
+            idMo = mediatorDB.getIdMo(cell.getStringCellValue());
+
+            for (int i = 0; i < checkboxes.size(); i++) {
+
+                if (checkboxes.get(i).isSelected()) {
+
+                    switch (i) {
+                        case 0:
+                            process_24h(wb, sheet, row, cell, idMo, queries);
+                            break;
+                        case 1:
+                            process_8h(wb, sheet, row, cell, idMo, queries);
+                            break;
+                        case 2:
+                            process_ambulProf(wb, sheet, row, cell, idMo, queries);
+                            break;
+                        case 3:
+                            process_ambulNeot(wb, sheet, row, cell, idMo, queries);
+                            break;
+                        case 4:
+                            process_ambulZab(wb, sheet, row, cell, idMo, queries);
+                            break;
+                        case 5:
+                            process_stomatProf(wb, sheet, row, cell, idMo, queries);
+                            break;
+                        case 6:
+                            process_stomatNeot(wb, sheet, row, cell, idMo, queries);
+                            break;
+                        case 7:
+                            process_stomatZab(wb, sheet, row, cell, idMo, queries);
+                            break;
+                        case 8:
+                            process_smp(wb, sheet, row, cell, idMo, queries);
+                            break;
+
+                    }
+
+                }
+
+            }
+
+            mediatorDB.setQuries(queries);
+
+//            for (String str : queries) {
+//                System.out.println(str);
+//            }
+
+        } catch (IOException ioException) {
+            JOptionPane.showMessageDialog(frame, "Файл не может быть прочитан");
+        }
+
+//        System.out.println();
+    }
+
+
 
     private void process_24h(HSSFWorkbook wb, HSSFSheet sheet, HSSFRow row, HSSFCell cell, int idMo, java.util.List<String> queries) {
 

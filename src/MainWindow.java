@@ -70,7 +70,7 @@ public class MainWindow extends JFrame {
         menuBar.add(reports);
         menuBar.add(loads);
 
-        menuBar.add(adminMenu);
+//        menuBar.add(adminMenu);
 
 
 
